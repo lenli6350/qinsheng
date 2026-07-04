@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>亲声 · 亲人语音聊天</title>
+<meta name="theme-color" content="#c96f4a">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💬</text></svg>">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="亲声">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="fileBanner" class="banner hidden">
+  ⚠️ 你正在用 file:// 方式打开页面，麦克风功能无法使用。请双击项目目录里的 <b>启动语音助手.bat</b> 来启动。
+</div>
+
+<header>
+  <div class="brand">
+    <span class="logo">💬</span>
+    <div>
+      <h1>亲声</h1>
+      <div class="sub">和 <span id="personaBadge">TA</span> 说说话</div>
+    </div>
+  </div>
+  <nav id="tabs">
+    <button class="tab on" data-tab="chat">聊天</button>
+    <button class="tab" data-tab="persona">亲人档案</button>
+    <button class="tab" data-tab="voice">声音</button>
+    <button class="tab" data-tab="brain">大脑</button>
+    <button class="tab" data-tab="help">帮助</button>
+  </nav>
+</header>
+
+<main>
+
+<!-- ==================== 聊天 ==================== -->
+<section id="tab-chat" class="pane on">
+  <div class="chat-head">
+    <span id="modeBadge" class="mode-badge">离线体验模式</span>
+    <button id="clearChatBtn" class="mini-btn" title="清空聊天记录">🗑 清空</button>
+  </div>
+  <div id="chatBox"></div>
+  <div id="statusLine" class="status-line"></div>
+  <div class="composer">
+    <button id="micBtn" title="点击开始/结束语音对话">🎤</button>
+    <input id="textInput" type="text" placeholder="也可以打字聊…" autocomplete="off">
+    <button id="sendBtn">发送</button>
+  </div>
+  <div class="chat-hint" id="chatHint">点 🎤 开始说话（浏览器会请求麦克风权限），说完稍停会自动发送；再点一下结束。</div>
+</section>
+
+<!-- ==================== 亲人档案 ==================== -->
+<section id="tab-persona" class="pane">
+  <h2>亲人档案</h2>
+  <p class="tip">这里的每一项都会影响 TA 说话的样子。<b>口头禅、共同回忆、示例对话</b>填得越真，越像 TA。当前预填的是示例档案，改成你自己亲人的信息后点保存。</p>
+
+  <div class="grid2">
+    <label>TA 是你的
+      <input id="pRelation" list="relationList" placeholder="妈妈 / 爸爸 / 奶奶…">
+      <datalist id="relationList">
+        <option value="妈妈"><option value="爸爸"><option value="奶奶"><option value="爷爷">
+        <option value="外婆"><option value="外公"><option value="姐姐"><option value="哥哥">
+      </datalist>
+    </label>
+    <label>名字 / 昵称（可不填）
+      <input id="pName" placeholder="例如：王秀兰">
+    </label>
+    <label>性别
+      <select id="pGender">
+        <option value="female">女</option>
+        <option value="male">男</option>
+      </select>
+    </label>
+    <label>年龄（大概）
+      <input id="pAge" placeholder="例如：55">
+    </label>
+    <label>TA 平时怎么叫你
+      <input id="pUserCall" placeholder="例如：儿子 / 闺女 / 小名">
+    </label>
+    <label>方言 / 地域（可不填）
+      <input id="pDialect" placeholder="例如：东北人，爱说'咋整'">
+    </label>
+  </div>
+
+  <label class="block">性格特点（点选，可多选）</label>
+  <div id="personalityChips" class="chips"></div>
+  <input id="pPersonalityExtra" placeholder="其他性格补充，例如：其实很心软，就是嘴硬">
+
+  <label class="block">口头禅（用中文逗号分开）
+    <input id="pCatchphrases" placeholder="例如：哎哟，我跟你说，听妈的没错">
+  </label>
+
+  <label class="block">说话风格
+    <select id="pSpeakStyle">
+      <option value="简短">简短干脆</option>
+      <option value="正常">正常</option>
+      <option value="唠叨">爱唠叨、话多</option>
+    </select>
+  </label>
+
+  <label class="block">TA 最关心的话题（点选）</label>
+  <div id="topicsChips" class="chips"></div>
+
+  <label class="block">你们的共同回忆 / 家里的事（一行一条，越具体越好）
+    <textarea id="pMemories" rows="4" placeholder="例如：小时候你最爱吃我做的红烧肉。&#10;家里养过一只叫大黄的狗。"></textarea>
+  </label>
+
+  <label class="block">TA 的其他习惯（可不填）
+    <textarea id="pHabits" rows="2" placeholder="例如：爱转发养生文章；微信语音一发就是一分钟"></textarea>
+  </label>
+
+  <label class="block">忌讳 / 不要提的话题（可不填）
+    <input id="pTaboos" placeholder="例如：不要提去世的外公">
+  </label>
+
+  <label class="block">示例对话（一行一条，格式：你说的话 || TA的回答，这一项对"像不像"帮助最大）
+    <textarea id="pExamples" rows="4" placeholder="我最近好累 || 哎哟，又熬夜了吧？身体要紧，早点睡。&#10;我想吃你做的菜了 || 那还不快回来，妈给你做红烧肉。"></textarea>
+  </label>
+
+  <div class="btn-row">
+    <button id="savePersonaBtn" class="primary">保存档案</button>
+    <button id="exportPersonaBtn">导出备份</button>
+    <label class="file-btn">导入备份<input id="importPersonaFile" type="file" accept=".json"></label>
+    <button id="resetPersonaBtn" class="danger">恢复成示例档案</button>
+  </div>
+</section>
+
+<!-- ==================== 声音 ==================== -->
+<section id="tab-voice" class="pane">
+  <h2>声音设置</h2>
+  <p class="tip">先用浏览器自带的声音，挑一个最接近 TA 的，再微调语速语调。想要真正克隆 TA 的声音，看下面"声音克隆（进阶）"。推荐用 <b>Edge 浏览器</b>，中文声音最自然。</p>
+
+  <label class="block">发声引擎
+    <select id="ttsEngine">
+      <option value="browser">浏览器自带（免费，推荐先用）</option>
+      <option value="elevenlabs">ElevenLabs 克隆音色（需要 key）</option>
+      <option value="custom">自定义 TTS 接口（进阶）</option>
+      <option value="off">静音（只看文字）</option>
+    </select>
+  </label>
+
+  <div id="panel-tts-browser" class="sub-panel">
+    <label class="block">选择音色
+      <select id="voiceSelect"></select>
+    </label>
+    <label class="block">语速：<span id="rateVal">1.0</span>
+      <input id="rateRange" type="range" min="0.5" max="1.6" step="0.05" value="1">
+    </label>
+    <label class="block">音调：<span id="pitchVal">1.0</span>
+      <input id="pitchRange" type="range" min="0.5" max="1.5" step="0.05" value="1">
+    </label>
+  </div>
+
+  <div id="panel-tts-elevenlabs" class="sub-panel hidden">
+    <p class="tip">在 elevenlabs.io 上传亲人 1~3 分钟的清晰录音做 Instant Voice Clone，拿到 Voice ID 和 API Key 填在这里。</p>
+    <label class="block">API Key <input id="elKey" type="password" placeholder="xi-..."></label>
+    <label class="block">Voice ID <input id="elVoiceId" placeholder="克隆音色的 Voice ID"></label>
+    <label class="block">模型 <input id="elModel" value="eleven_multilingual_v2"></label>
+  </div>
+
+  <div id="panel-tts-custom" class="sub-panel hidden">
+    <p class="tip">POST 该地址，请求体 {"text":"..."}，返回音频（audio/mpeg 或 wav）。适合自建 GPT-SoVITS / CosyVoice 服务。</p>
+    <label class="block">接口地址 <input id="customTtsUrl" placeholder="http://127.0.0.1:9880/tts"></label>
+  </div>
+
+  <label class="check"><input id="autoSpeak" type="checkbox" checked> 收到回复自动朗读</label>
+
+  <div class="btn-row">
+    <button id="testVoiceBtn" class="primary">试听一句</button>
+  </div>
+
+  <h2>听你说话（语音识别）</h2>
+  <label class="block">识别语言
+    <select id="sttLang">
+      <option value="zh-CN">普通话（zh-CN）</option>
+      <option value="zh-TW">国语·繁体（zh-TW）</option>
+      <option value="zh-HK">粤语（zh-HK）</option>
+      <option value="en-US">English (en-US)</option>
+    </select>
+  </label>
+  <p class="tip" id="sttSupportTip"></p>
+</section>
+
+<!-- ==================== 大脑 ==================== -->
+<section id="tab-brain" class="pane">
+  <h2>聊天大脑</h2>
+  <p class="tip">默认是<b>离线体验模式</b>（内置简单回复，不需要联网和 key）。接入大模型后，TA 才会真正"会聊天"。key 只保存在你这台电脑的浏览器里，不会上传到别处。</p>
+
+  <label class="block">选择大脑
+    <select id="providerSelect">
+      <option value="offline">离线体验模式（免费，回复简单）</option>
+      <option value="anthropic">Claude（Anthropic 官方 key）</option>
+      <option value="openai">OpenAI 兼容接口（DeepSeek / Kimi / 通义等）</option>
+      <option value="ollama">本机 Ollama（本地模型，免费）</option>
+    </select>
+  </label>
+
+  <div id="panel-brain-anthropic" class="sub-panel hidden">
+    <label class="block">API Key <input id="anthKey" type="password" placeholder="sk-ant-..."></label>
+    <label class="block">模型
+      <select id="anthModel">
+        <option value="claude-opus-4-8">claude-opus-4-8（最强，推荐）</option>
+        <option value="claude-sonnet-5">claude-sonnet-5（均衡）</option>
+        <option value="claude-haiku-4-5">claude-haiku-4-5（便宜快速）</option>
+      </select>
+    </label>
+  </div>
+
+  <div id="panel-brain-openai" class="sub-panel hidden">
+    <label class="block">常用服务商
+      <select id="oaiPreset">
+        <option value="">— 选择后自动填地址 —</option>
+        <option value="deepseek">DeepSeek（国内好充值，便宜）</option>
+        <option value="moonshot">Kimi / Moonshot</option>
+        <option value="qwen">通义千问 DashScope</option>
+        <option value="openai">OpenAI</option>
+      </select>
+    </label>
+    <label class="block">接口地址 <input id="oaiBase" placeholder="https://api.deepseek.com/v1"></label>
+    <label class="block">API Key <input id="oaiKey" type="password" placeholder="sk-..."></label>
+    <label class="block">模型名 <input id="oaiModel" placeholder="deepseek-chat"></label>
+  </div>
+
+  <div id="panel-brain-ollama" class="sub-panel hidden">
+    <label class="block">Ollama 地址 <input id="olBase" value="http://localhost:11434"></label>
+    <div class="btn-row"><button id="olDetect">检测本机模型</button></div>
+    <label class="block">模型 <select id="olModel"></select></label>
+  </div>
+
+  <div class="btn-row">
+    <button id="testBrainBtn" class="primary">测试一下</button>
+    <span id="brainTestResult" class="test-result"></span>
+  </div>
+
+  <details class="advanced">
+    <summary>查看当前人设提示词（发给大模型的内容）</summary>
+    <pre id="promptPreview"></pre>
+  </details>
+</section>
+
+<!-- ==================== 帮助 ==================== -->
+<section id="tab-help" class="pane">
+  <h2>怎么用</h2>
+  <ol class="help-list">
+    <li><b>填档案</b>：到「亲人档案」把 TA 的口头禅、性格、你们的回忆填进去，保存。</li>
+    <li><b>选声音</b>：到「声音」挑一个最接近 TA 的音色，调语速音调。</li>
+    <li><b>接大脑</b>（可选但强烈推荐）：到「大脑」填一个大模型 key，TA 会聪明得多。</li>
+    <li><b>开聊</b>：回到「聊天」，点 🎤 说话，或直接打字。</li>
+  </ol>
+  <h2>常见问题</h2>
+  <ul class="help-list">
+    <li><b>点了 🎤 没反应 / 识别不出来</b>：手机上 iPhone 用 Safari（注意：加到主屏幕的图标里系统不提供语音识别，请回 Safari 用）、安卓用 Chrome；电脑上推荐 Edge。都要先允许麦克风权限。</li>
+    <li><b>没有声音</b>：检查「声音」里引擎不是"静音"；系统音量；试听按钮。</li>
+    <li><b>大模型报错</b>：多数是 key 不对或该服务商不允许浏览器直连（CORS），换 DeepSeek 或 Claude 试试。</li>
+    <li><b>数据存在哪</b>：档案、key、聊天记录全部只存在本机浏览器 localStorage，不会上传。换浏览器/清缓存会丢，记得用「导出备份」。</li>
+  </ul>
+  <h2>声音克隆（进阶）</h2>
+  <ul class="help-list">
+    <li>准备亲人 <b>1~3 分钟清晰、无背景音</b>的说话录音（微信语音导出也行）。</li>
+    <li>方案 A：ElevenLabs 官网做 Instant Voice Clone，把 Voice ID + API Key 填到「声音」页。</li>
+    <li>方案 B（免费/本地）：自建 GPT-SoVITS 或 CosyVoice，把服务地址填到"自定义 TTS 接口"。</li>
+  </ul>
+  <h2>一点提醒</h2>
+  <p class="tip">克隆真人的声音和人格请先征得本人同意；如果是为了怀念已离开的亲人，请留意自己的情绪，这个工具是陪伴，不是替代。</p>
+</section>
+
+</main>
+
+<div id="toast" class="toast hidden"></div>
+
+<script src="js/persona.js"></script>
+<script src="js/llm.js"></script>
+<script src="js/tts.js"></script>
+<script src="js/app.js"></script>
+<script>
+if ("serviceWorker" in navigator && location.protocol !== "file:") {
+  window.addEventListener("load", function () {
+    navigator.serviceWorker.register("sw.js").catch(function () { /* 离线能力是增强项，失败不影响使用 */ });
+  });
+}
+</script>
+</body>
+</html>
